@@ -1,65 +1,35 @@
-/*
-#include <WiFi.h>
-
-//const char* ssid = "AndroidK";
-//const char* password =  "senha123";
-
-const char* ssid = "Net_5";
-const char* password =  "1a2b3c4d";
-
-void setup() {
-
-  Serial.begin(115200);
-
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println("Connecting to WiFi..");
-  }
-
-  Serial.println("Connected to the WiFi network");
-
-}
-
-
-void loop() {
-  IPAddress ip;
-  ip = WiFi.localIP();
-  Serial.println(ip);
-  delay(1000);
-}
-*/
-
-
-
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <Wire.h>
 
 // Wifi settings and MQTT Broker IP address:
-//const char* ssid = "Net_5";
-//const char* password =  "1a2b3c4d";
 const char* ssid = "AndroidK";
 const char* password =  "senha123";
-
 const char* mqtt_server = "192.168.43.68";
-
-
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+// Testing...
 long lastMsg = 0;
-//char msg[50];
-//int value = 0;
 
 
-// LED Pin
-//const int ledPin = 4;
+
+// MOTOR LEVANTAMENTO
+int a = 2, b = 16;
+char ler;
+
+int vel = 1024;
+int upVel = 32;
+int flag_dir = 0;
 
 
+
+/* FUNCTIONS */
 void setup_wifi();
 void callback(char* topic, byte* message, unsigned int length) ;
+void setup_lifting_motor();
+
+
 
 
 void setup() {
@@ -70,7 +40,22 @@ void setup() {
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
-  // pinMode (LED_BUILTIN, OUTPUT);
+  setup_lifting_motor();
+}
+
+void setup_lifting_motor() {
+
+  pinMode(a, OUTPUT);
+  pinMode(b, OUTPUT);
+
+  ledcAttachPin(a, 0);//Atribuimos o pino 2 ao canal 0.
+  ledcSetup(0, 1000, 10);//Atribuimos ao canal 0 a frequencia de 1000Hz com resolucao de 10bits.
+
+  ledcAttachPin(b, 1);//Atribuimos o pino 2 ao canal 0.
+  ledcSetup(0, 1000, 10);//Atribuimos ao canal 0 a frequencia de 1000Hz com resolucao de 10bits.
+
+  ledcWrite(0, 0);
+  ledcWrite(1, 0);
 }
 
 void setup_wifi() {
@@ -111,11 +96,23 @@ void callback(char* topic, byte* message, unsigned int length) {
     Serial.print("Movement up_down: ");
     if(messageTemp == "up"){
       Serial.println("up");
-      //digitalWrite(LED_BUILTIN, HIGH);
+
+      ledcWrite(1, 0);
+      ledcWrite(0, vel);
+      flag_dir = 0;
     }
     else if(messageTemp == "down"){
       Serial.println("down");
-      //digitalWrite(LED_BUILTIN, LOW);
+
+      ledcWrite(0, 0);
+      ledcWrite(1, vel);
+      flag_dir = 1;
+    }
+    else if(messageTemp == "stop"){
+      Serial.println("stop");
+
+      ledcWrite(0, 0);
+      ledcWrite(1, 0);
     }
   }
 
