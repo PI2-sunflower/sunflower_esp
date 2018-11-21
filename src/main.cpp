@@ -2,59 +2,44 @@
 #include <Wire.h>
 #include <WiFi.h>
 #include <UIPEthernet.h>
+#include <HardwareSerial.h>
+
+#include "motion_control_up_down.h"
+#include "motion_control_expand_retract.h"
+#include "move_axis.h"
 
 
-// Testing...
+/* SENSORS VARIABLES */
 long lastMsg = 0;
+HardwareSerial SerialArduino(2);
 
 
-// MOTOR LEVANTAMENTO
-int a = 2, b = 16;
-char ler;
 
-int vel = 1024;
-int upVel = 32;
-int flag_dir = 0;
-
-
-/* MOVEMENT FUNCTIONS */
-void setup_up_down_movement();
-void go_up();
-void go_down();
-void stop_up_down();
-
-
-/* CONNECTION FUNCTIONS */
+/* CONNECTION AND MQTT FUNCTIONS */
 void setup_wifi(char* ssid, char* password);
+void callback(char* topic, byte* message, unsigned int length);
 
 
-/* MQTT FUNCTIONS */
-void callback(char* topic, byte* message, unsigned int length) ;
-
-//WiFiClient espClient;
-EthernetClient espClient;
+WiFiClient espClient;
+//EthernetClient espClient;
 PubSubClient client(espClient);
-
-
-
-
-
 
 
 
 void setup() {
   Serial.begin(115200);
-  //setup_wifi("AndroidK", "senha123");
+  SerialArduino.begin(115200, SERIAL_8N1, 16, 17);
 
+  setup_wifi("termofluidos", "fg@t&rm0flwydos");
+  // uint8_t mac[6] = {0x00,0x01,0x02,0x03,0x04,0x05};
+  // Ethernet.begin(mac,IPAddress(192,168,1,140));
 
-  uint8_t mac[6] = {0x00,0x01,0x02,0x03,0x04,0x05};
-  Ethernet.begin(mac,IPAddress(192,168,1,140));
-
-  const char* mqtt_server = "192.168.1.102";
+  const char* mqtt_server = "192.168.1.100";
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
   setup_up_down_movement();
+  setup_expand_retract_movement();
 }
 
 
@@ -68,20 +53,44 @@ void callback(char* topic, byte* message, unsigned int length) {
     Serial.print((char)message[i]);
     messageTemp += (char)message[i];
   }
+
   Serial.println();
 
-
-  // If a message is received on the topic esp32/output, you check if the message is either "on" or "off".
+  // If a message is received on the topic movement/up_down
   if (String(topic) == "movement/up_down") {
     Serial.print("Movement up_down: ");
     if(messageTemp == "up"){
-      go_up();
+      go_up(&Serial);
     }
     else if(messageTemp == "down"){
-      go_down();
+      go_down(&Serial);
     }
     else if(messageTemp == "stop"){
-      stop_up_down();
+      stop_up_down(&Serial);
+    }
+  }
+
+  // // If a message is received on the topic movement/up_down
+  // if (String(topic) == "movement/expand_retract") {
+  //   Serial.print("Movement expand_retract: ");
+  //   if(messageTemp == "expand"){
+  //     expand(&Serial);
+  //   }
+  //   else if(messageTemp == "retract"){
+  //     retract(&Serial);
+  //   }
+  //   else if(messageTemp == "stop"){
+  //     stop_expand_retract(&Serial);
+  //   }
+  // }
+
+  if (String(topic) == "movement/axis") {
+    Serial.print("Moving axis: ");
+    if(messageTemp == "go_home"){
+      go_home(&SerialArduino, &Serial);
+    }
+    else {
+      move_axis(messageTemp, &SerialArduino, &Serial);
     }
   }
 
@@ -96,6 +105,8 @@ void reconnect() {
       Serial.println("connected");
       // Subscribe
       client.subscribe("movement/up_down");
+      client.subscribe("movement/expand_retract");
+      client.subscribe("movement/axis");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -105,6 +116,7 @@ void reconnect() {
     }
   }
 }
+
 void loop() {
   if (!client.connected()) {
     reconnect();
@@ -115,21 +127,17 @@ void loop() {
   if (now - lastMsg > 5000) {
     lastMsg = now;
 
-    // Publish message to esp32/temperature
-    const char* humString = "Not raining";
-    Serial.print("Humidity: ");
-    Serial.println(humString);
-    client.publish("sensor/humidity", humString);
+    const char* magnetString = "213 graus";
+    Serial.print("Magnetometer: ");
+    Serial.println(magnetString);
+    client.publish("sensor/magnetometer", magnetString);
 
+    const char* aliveString = "alive";
+    Serial.print("status: ");
+    Serial.println(aliveString);
+    client.publish("status", aliveString);
   }
 }
-
-
-
-
-
-
-
 
 
 
@@ -152,52 +160,4 @@ void setup_wifi(char* ssid, char* password) {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-}
-
-
-
-
-
-
-
-
-
-
-// UP AND DOWN MOVEMENT FUNCTIONS
-void setup_up_down_movement() {
-
-  pinMode(a, OUTPUT);
-  pinMode(b, OUTPUT);
-
-  ledcAttachPin(a, 0);//Atribuimos o pino 2 ao canal 0.
-  ledcSetup(0, 1000, 10);//Atribuimos ao canal 0 a frequencia de 1000Hz com resolucao de 10bits.
-
-  ledcAttachPin(b, 1);//Atribuimos o pino 2 ao canal 0.
-  ledcSetup(0, 1000, 10);//Atribuimos ao canal 0 a frequencia de 1000Hz com resolucao de 10bits.
-
-  ledcWrite(0, 0);
-  ledcWrite(1, 0);
-}
-
-void go_up() {
-  Serial.println("up");
-
-  ledcWrite(1, 0);
-  ledcWrite(0, vel);
-  flag_dir = 0;
-}
-
-void go_down() {
-  Serial.println("down");
-
-  ledcWrite(0, 0);
-  ledcWrite(1, vel);
-  flag_dir = 1;
-}
-
-void stop_up_down() {
-  Serial.println("stop up and down");
-
-  ledcWrite(0, 0);
-  ledcWrite(1, 0);
 }
