@@ -3,22 +3,79 @@
 //void teste_ok_go_home(Stream * serial_arduino);
 void go_home(Stream * serial_arduino, Stream * serial_ref);
 void move_axis(String messageTemp, Stream * serial_arduino, Stream * serial_ref);
+void clean_arduino_read_buffer(Stream * serial_arduino);
 
 
+void clean_arduino_read_buffer(Stream * serial_arduino) {
+  while(serial_arduino->available() > 0){
+    serial_arduino->read();
+  }
+}
 
 void go_home(Stream * serial_arduino, Stream * serial_ref){
-  serial_ref->println("$H");
-  serial_ref->println("$X");
+  /*
+    serial_arduino->println("$H");
+    serial_arduino->println("$X");
+  */
 
+  // $H - GO HOME
+  clean_arduino_read_buffer(serial_arduino);
+  serial_ref->println("trying to: $H");
   serial_arduino->println("$H");
+  delay(50);
+
+  while (serial_arduino->readString() != "ok") {
+    serial_ref->println("trying to: $H");
+    serial_arduino->println("$H");
+    delay(1000);
+  }
+  serial_ref->println("ok: $H");
+
+  // $X - UNLOCK
+  clean_arduino_read_buffer(serial_arduino);
+  serial_ref->println("trying to: $X");
   serial_arduino->println("$X");
+  delay(50);
+  while (serial_arduino->readString() != "ok") {
+    serial_ref->println("trying to: $X");
+    serial_arduino->println("$X");
+    delay(1000);
+  }
+  serial_ref->println("ok: $X");
+}
+
+
+void unlock(Stream * serial_arduino, Stream * serial_ref){
+
+  // $X - UNLOCK
+  delay(50);
+  clean_arduino_read_buffer(serial_arduino);
+  serial_ref->println("trying to: $X");
+  serial_arduino->println("$X");
+  delay(50);
+  while (serial_arduino->readString() != "ok") {
+    serial_ref->println("trying to: $X");
+    serial_arduino->println("$X");
+    delay(1000);
+  }
+  serial_ref->println("ok: $X");
+
 }
 
 
 
+
+
 void move_axis(String messageTemp, Stream * serial_arduino, Stream * serial_ref) {
+  clean_arduino_read_buffer(serial_arduino);
+
   serial_ref->println(messageTemp);
   serial_arduino->println(messageTemp);
+
+  delay(50);
+  if (serial_arduino->read() == 'ok') {
+    serial_ref->println('ok');
+  }
 
 }
 

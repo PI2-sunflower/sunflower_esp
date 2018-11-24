@@ -1,7 +1,8 @@
 #include <Wire.h>
 
 // UP AND DOWN VARIABLES
-int pin_expand = 14, pin_retract = 12, pin_stop_up = 33, pin_stop_down = 32;
+int pin_expand = 14, pin_retract = 12;
+int pin_stop_up = 33, pin_stop_down = 32;
 int vel_expand_retract = 1024;
 
 
