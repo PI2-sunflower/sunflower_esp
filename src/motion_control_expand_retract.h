@@ -2,7 +2,7 @@
 
 // UP AND DOWN VARIABLES
 int pin_expand = 14, pin_retract = 12;
-int pin_stop_up = 33, pin_stop_down = 32;
+int pin_stop_down = 32;
 int vel_expand_retract = 1024;
 
 
@@ -20,7 +20,7 @@ void setup_expand_retract_movement() {
 
   pinMode(pin_expand, OUTPUT);
   pinMode(pin_retract, OUTPUT);
-  pinMode(pin_stop_up, INPUT);
+  //pinMode(pin_stop_up, INPUT);
   pinMode(pin_stop_down, INPUT);
 
   // COMPRESSOR
@@ -40,9 +40,10 @@ void expand(Stream * serial_ref) {
   //ledcWrite(2, vel_expand_retract);
   digitalWrite(pin_retract, HIGH);
   digitalWrite(pin_expand,  HIGH);
-  while(digitalRead(pin_stop_up) == LOW) {
-    delay(10);
-  }
+  // while(digitalRead(pin_stop_up) == LOW) {
+  //   delay(10);
+  // }
+  delay(45000);
   digitalWrite(pin_retract, LOW);
   digitalWrite(pin_expand,  LOW);
 }

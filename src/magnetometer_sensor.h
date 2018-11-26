@@ -20,13 +20,13 @@ String get_data(Stream * serial_ref, Adafruit_BNO055 * bno) {
   magString += ",Z:"+String(event.orientation.z,4);
 
   // /* Display the floating point data */
-  serial_ref->print("X: ");
-  serial_ref->print(event.orientation.x, 4);
-  serial_ref->print("\tY: ");
-  serial_ref->print(event.orientation.y, 4);
-  serial_ref->print("\tZ: ");
-  serial_ref->print(event.orientation.z, 4);
-  serial_ref->println("");
+  // serial_ref->print("X: ");
+  // serial_ref->print(event.orientation.x, 4);
+  // serial_ref->print("\tY: ");
+  // serial_ref->print(event.orientation.y, 4);
+  // serial_ref->print("\tZ: ");
+  // serial_ref->print(event.orientation.z, 4);
+  // serial_ref->println("");
 
   // String orientationX = event.orientation.x;
   // String orientationY = event.orientation.y;

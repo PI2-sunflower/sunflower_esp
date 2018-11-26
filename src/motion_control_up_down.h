@@ -1,7 +1,7 @@
 #include <Wire.h>
 
 // UP AND DOWN VARIABLES
-int pin_up = 14, pin_down = 12;
+int pin_up = 26, pin_down = 27;
 int pin_up_stop = 35, pin_down_stop = 34;
 
 
