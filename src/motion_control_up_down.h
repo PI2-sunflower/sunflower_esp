@@ -26,22 +26,58 @@ void setup_up_down_movement() {
   digitalWrite(pin_down, LOW);
 }
 
-void go_up(Stream * serial_ref) {
+void go_up(Stream * serial_ref, PubSubClient * client) {
   serial_ref->println("** up **");
+  long lastMgsTime = millis();
 
   digitalWrite(pin_down, LOW);
   digitalWrite(pin_up, HIGH);
-  while(digitalRead(pin_up_stop) == HIGH){delay(50);}
+  delay(300);
+
+  // while(digitalRead(pin_up_stop) == HIGH){
+  //   delay(50);
+  // }
+  while(digitalRead(pin_up_stop) == HIGH) {
+    long currentTime = millis();
+    if (currentTime - lastMgsTime > 5000) {
+      lastMgsTime = currentTime;
+
+      const char* busyString = "busy";
+      serial_ref->print("status: ");
+      serial_ref->println(busyString);
+      client->publish("status", busyString);
+    }
+    delay(10);
+  }
   digitalWrite(pin_down, LOW);
   digitalWrite(pin_up, LOW);
 }
 
-void go_down(Stream * serial_ref) {
+void go_down(Stream * serial_ref, PubSubClient * client) {
   serial_ref->println("** down **");
+  long lastMgsTime = millis();
+  long currentTime = millis();
 
   digitalWrite(pin_up, LOW);
   digitalWrite(pin_down, HIGH);
-  while(digitalRead(pin_down_stop) == HIGH){delay(50);}
+  delay(300);
+  // while(digitalRead(pin_down_stop) == HIGH){
+  //   delay(50);
+  // }
+  while(digitalRead(pin_down_stop) == HIGH) {
+    currentTime = millis();
+    if (currentTime - lastMgsTime > 5000) {
+      lastMgsTime = currentTime;
+
+      const char* busyString = "busy";
+      serial_ref->print("status: ");
+      serial_ref->println(busyString);
+      client->publish("status", busyString);
+    }
+    delay(50);
+  }
+
+  serial_ref->println("*** end down ***");
   digitalWrite(pin_down, LOW);
   digitalWrite(pin_up, LOW);
 }

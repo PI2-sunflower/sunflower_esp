@@ -2,7 +2,7 @@
 
 // UP AND DOWN VARIABLES
 int pin_expand = 12, pin_retract = 14;
-int pin_stop_down = 32;
+int pin_stop_retract = 32;
 int vel_expand_retract = 1024;
 
 
@@ -21,7 +21,7 @@ void setup_expand_retract_movement() {
   pinMode(pin_expand, OUTPUT);
   pinMode(pin_retract, OUTPUT);
   //pinMode(pin_stop_up, INPUT);
-  pinMode(pin_stop_down, INPUT);
+  pinMode(pin_stop_retract, INPUT);
 
   // COMPRESSOR
   //ledcAttachPin(pin_expand, 2); //Atribuimos ao canal 2.
@@ -34,27 +34,58 @@ void setup_expand_retract_movement() {
   //ledcWrite(2, 0);
 }
 
-void expand(Stream * serial_ref) {
+void expand(Stream * serial_ref, PubSubClient * client) {
   serial_ref->println("** expand **");
+  long lastMgsTime = millis();
+  long expandStartTime = millis();
 
   //ledcWrite(2, vel_expand_retract);
   digitalWrite(pin_retract, LOW);
   digitalWrite(pin_expand,  HIGH);
-  // while(digitalRead(pin_stop_up) == LOW) {
-  //   delay(10);
-  // }
-  delay(7000); //45
+  //delay(45000); //45
+
+  while(true) {
+    long currentTime = millis();
+    if (currentTime - lastMgsTime > 5000) {
+      lastMgsTime = currentTime;
+      const char* busyString = "busy";
+      serial_ref->print("status: ");
+      serial_ref->println(busyString);
+      client->publish("status", busyString);
+    }
+    if (currentTime - expandStartTime >= 45000) {
+      break;
+    }
+
+    delay(50);
+  }
+
   digitalWrite(pin_retract, LOW);
   digitalWrite(pin_expand,  LOW);
 }
 
-void retract(Stream * serial_ref) {
+void retract(Stream * serial_ref, PubSubClient * client) {
   serial_ref->println("** retract **");
+  long lastMgsTime = millis();
+  long currentTime = millis();
 
-  //ledcWrite(2, vel_expand_retract);
   digitalWrite(pin_expand,  LOW);
   digitalWrite(pin_retract, HIGH);
-  while(digitalRead(pin_stop_down) == LOW) {delay(50);}
+  delay(300);
+  
+  while(digitalRead(pin_stop_retract) == LOW) {
+    currentTime = millis();
+    if (currentTime - lastMgsTime >= 5000) {
+      lastMgsTime = currentTime;
+
+      const char* busyString = "busy";
+      serial_ref->print("status: ");
+      serial_ref->println(busyString);
+      client->publish("status", busyString);
+    }
+    delay(50);
+  }
+  delay(4000);
   digitalWrite(pin_expand,  LOW);
   digitalWrite(pin_retract, LOW);
 }

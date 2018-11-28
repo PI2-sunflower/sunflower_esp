@@ -41,7 +41,7 @@ void setup() {
   // uint8_t mac[6] = {0x00,0x01,0x02,0x03,0x04,0x05};
   // Ethernet.begin(mac,IPAddress(192,168,1,140));
 
-  const char* mqtt_server = "192.168.1.100";
+  const char* mqtt_server = "192.168.1.101";
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
@@ -68,10 +68,10 @@ void callback(char* topic, byte* message, unsigned int length) {
   if (String(topic) == "movement/up_down") {
     Serial.print("Movement up_down: ");
     if(messageTemp == "up"){
-      go_up(&Serial);
+      go_up(&Serial, &client);
     }
     else if(messageTemp == "down"){
-      go_down(&Serial);
+      go_down(&Serial, &client);
     }
     else if(messageTemp == "stop"){
       stop_up_down(&Serial);
@@ -82,10 +82,10 @@ void callback(char* topic, byte* message, unsigned int length) {
   if (String(topic) == "movement/expand_retract") {
     Serial.print("Movement expand_retract: ");
     if(messageTemp == "expand"){
-      expand(&Serial);
+      expand(&Serial, &client);
     }
     else if(messageTemp == "retract"){
-      retract(&Serial);
+      retract(&Serial, &client);
     }
     else if(messageTemp == "stop"){
       stop_expand_retract(&Serial);
@@ -151,6 +151,7 @@ void loop() {
     Serial.print("Magnetometer: ");
     Serial.println(magnetStringChar);
     client.publish("sensor/magnetometer", magnetStringChar);
+
   }
 }
 
