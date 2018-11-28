@@ -1,7 +1,7 @@
 #include <Wire.h>
 
 // UP AND DOWN VARIABLES
-int pin_expand = 14, pin_retract = 12;
+int pin_expand = 12, pin_retract = 14;
 int pin_stop_down = 32;
 int vel_expand_retract = 1024;
 
@@ -38,12 +38,12 @@ void expand(Stream * serial_ref) {
   serial_ref->println("** expand **");
 
   //ledcWrite(2, vel_expand_retract);
-  digitalWrite(pin_retract, HIGH);
+  digitalWrite(pin_retract, LOW);
   digitalWrite(pin_expand,  HIGH);
   // while(digitalRead(pin_stop_up) == LOW) {
   //   delay(10);
   // }
-  delay(45000);
+  delay(7000); //45
   digitalWrite(pin_retract, LOW);
   digitalWrite(pin_expand,  LOW);
 }
@@ -54,9 +54,7 @@ void retract(Stream * serial_ref) {
   //ledcWrite(2, vel_expand_retract);
   digitalWrite(pin_expand,  LOW);
   digitalWrite(pin_retract, HIGH);
-  while(digitalRead(pin_stop_down) == LOW) {
-    delay(10);
-  }
+  while(digitalRead(pin_stop_down) == LOW) {delay(50);}
   digitalWrite(pin_expand,  LOW);
   digitalWrite(pin_retract, LOW);
 }

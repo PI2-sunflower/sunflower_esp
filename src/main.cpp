@@ -41,7 +41,7 @@ void setup() {
   // uint8_t mac[6] = {0x00,0x01,0x02,0x03,0x04,0x05};
   // Ethernet.begin(mac,IPAddress(192,168,1,140));
 
-  const char* mqtt_server = "192.168.1.101";
+  const char* mqtt_server = "192.168.1.100";
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
