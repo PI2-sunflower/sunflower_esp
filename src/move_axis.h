@@ -13,11 +13,12 @@ void clean_arduino_read_buffer(Stream * serial_arduino) {
 }
 
 void go_home(Stream * serial_arduino, Stream * serial_ref){
-  /*
-    serial_arduino->println("$H");
-    serial_arduino->println("$X");
-  */
 
+  serial_arduino->println("$H");
+  serial_ref->println("$H");
+  delay(200);
+  
+  /*
   // $H - GO HOME
   clean_arduino_read_buffer(serial_arduino);
   serial_ref->println("trying to: $H");
@@ -42,11 +43,17 @@ void go_home(Stream * serial_arduino, Stream * serial_ref){
     delay(1000);
   }
   serial_ref->println("ok: $X");
+  */
 }
 
 
 void unlock(Stream * serial_arduino, Stream * serial_ref){
 
+  serial_arduino->println("$X");
+  serial_ref->println("$X");
+  delay(200);
+
+  /*
   // $X - UNLOCK
   delay(50);
   clean_arduino_read_buffer(serial_arduino);
@@ -59,7 +66,7 @@ void unlock(Stream * serial_arduino, Stream * serial_ref){
     delay(1000);
   }
   serial_ref->println("ok: $X");
-
+  */
 }
 
 

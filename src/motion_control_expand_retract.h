@@ -82,11 +82,11 @@ void retract(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino
   long lastMgsTime = millis();
   long currentTime = millis();
 
-  digitalWrite(pin_expand,  LOW);
-  digitalWrite(pin_retract, HIGH);
-  delay(300);
+
 
   while(digitalRead(pin_stop_retract) == LOW) {
+    digitalWrite(pin_expand,  LOW);
+    digitalWrite(pin_retract, HIGH);
     currentTime = millis();
     if (currentTime - lastMgsTime >= 5000) {
       lastMgsTime = currentTime;

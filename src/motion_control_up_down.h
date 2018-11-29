@@ -34,14 +34,14 @@ void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) 
   serial_ref->println("** up **");
   long lastMgsTime = millis();
 
-  digitalWrite(pin_down, LOW);
-  digitalWrite(pin_up, HIGH);
-  delay(300);
 
   // while(digitalRead(pin_up_stop) == HIGH){
   //   delay(50);
   // }
   while(digitalRead(pin_up_stop) == HIGH) {
+    digitalWrite(pin_down, LOW);
+    digitalWrite(pin_up, HIGH);
+
     long currentTime = millis();
     if (currentTime - lastMgsTime > 5000) {
       lastMgsTime = currentTime;
@@ -61,23 +61,12 @@ void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) 
   delay(100);
   digitalWrite(pin_reset, HIGH);
   delay(1000);
-  // $X
-  // -10,-10,-10
-  // G1 X-10 Y-10 Z-10 F600
 
-  //MOVE HEAD
-  // while(serial_arduino->available() > 0){
-  //   serial_arduino->read();
-  // }
 
   serial_arduino->println("$X");
   serial_ref->println("$X");
   delay(100);
-  // while (serial_arduino->readString() != "[Caution: Unlocked]") {
-  //   serial_ref->println("trying to: $X");
-  //   serial_arduino->println("$X");
-  //   delay(1000);
-  // }
+
 
   serial_arduino->println("$H");
   serial_ref->println("$H");
@@ -95,7 +84,7 @@ void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino
 
   serial_arduino->println("G1 X0 Y0 Z0 F1000");
   serial_ref->println("G1 X0 Y0 Z0 F1000");
-  delay(10000);
+  delay(15000);  // TODO:  15000
 
   // serial_arduino->println("G1 X0 Y0 Z0 F1000");
   // delay(100);
@@ -103,13 +92,15 @@ void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino
   long lastMgsTime = millis();
   long currentTime = millis();
 
-  digitalWrite(pin_up, LOW);
-  digitalWrite(pin_down, HIGH);
-  delay(300);
+
+  //delay(750);
   // while(digitalRead(pin_down_stop) == HIGH){
   //   delay(50);
   // }
   while(digitalRead(pin_down_stop) == HIGH) {
+    digitalWrite(pin_up, LOW);
+    digitalWrite(pin_down, HIGH);
+
     currentTime = millis();
     if (currentTime - lastMgsTime > 5000) {
       lastMgsTime = currentTime;
@@ -121,8 +112,8 @@ void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino
     }
     delay(50);
   }
-
   serial_ref->println("*** end down ***");
+
   digitalWrite(pin_down, LOW);
   digitalWrite(pin_up, LOW);
   delay(300);

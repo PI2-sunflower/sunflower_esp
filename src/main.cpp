@@ -41,7 +41,7 @@ void setup() {
   // uint8_t mac[6] = {0x00,0x01,0x02,0x03,0x04,0x05};
   // Ethernet.begin(mac,IPAddress(192,168,1,140));
 
-  const char* mqtt_server = "192.168.1.101";
+  const char* mqtt_server = "192.168.1.104";
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
@@ -99,6 +99,22 @@ void callback(char* topic, byte* message, unsigned int length) {
     }
     else if (messageTemp == "unlock"){
       unlock(&SerialArduino, &Serial);
+    }
+    else if (messageTemp == "reset_axis"){
+
+        digitalWrite(pin_reset, LOW);
+        delay(100);
+        digitalWrite(pin_reset, HIGH);
+        delay(1000);
+
+        SerialArduino.println("$X");
+        Serial.println("$X");
+        delay(100);
+
+        SerialArduino.println("$H");
+        Serial.println("$H");
+        delay(100);
+
     }
     else {
       move_axis(messageTemp, &SerialArduino, &Serial);
