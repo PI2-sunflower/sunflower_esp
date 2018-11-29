@@ -8,8 +8,8 @@ int vel_expand_retract = 1024;
 
 /* MOVEMENT FUNCTIONS */
 void setup_expand_retract_movement();
-void expand(Stream * serial_ref);
-void retract(Stream * serial_ref);
+void expand(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino);
+void retract(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino);
 void stop_expand_retract(Stream * serial_ref);
 
 
@@ -34,7 +34,7 @@ void setup_expand_retract_movement() {
   //ledcWrite(2, 0);
 }
 
-void expand(Stream * serial_ref, PubSubClient * client) {
+void expand(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) {
   serial_ref->println("** expand **");
   long lastMgsTime = millis();
   long expandStartTime = millis();
@@ -62,9 +62,22 @@ void expand(Stream * serial_ref, PubSubClient * client) {
 
   digitalWrite(pin_retract, LOW);
   digitalWrite(pin_expand,  LOW);
+  delay(100);
+
+  serial_arduino->println("$X");
+  serial_ref->println("$X");
+  delay(100);
+  serial_arduino->println("$H");
+  serial_ref->println("$H");
+  delay(20000);
+
 }
 
-void retract(Stream * serial_ref, PubSubClient * client) {
+void retract(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) {
+  serial_arduino->println("G1 X-90 Y-5 Z-5 F600");
+  serial_ref->println("G1 X-90 Y-5 Z-5 F600");
+  delay(20000);
+
   serial_ref->println("** retract **");
   long lastMgsTime = millis();
   long currentTime = millis();
@@ -72,7 +85,7 @@ void retract(Stream * serial_ref, PubSubClient * client) {
   digitalWrite(pin_expand,  LOW);
   digitalWrite(pin_retract, HIGH);
   delay(300);
-  
+
   while(digitalRead(pin_stop_retract) == LOW) {
     currentTime = millis();
     if (currentTime - lastMgsTime >= 5000) {

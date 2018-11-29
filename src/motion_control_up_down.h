@@ -3,14 +3,16 @@
 // UP AND DOWN VARIABLES
 int pin_up = 26, pin_down = 27;
 int pin_up_stop = 35, pin_down_stop = 34;
+int pin_reset = 33;
 
 
 /* MOVEMENT FUNCTIONS */
 void setup_up_down_movement();
-void go_up(Stream * serial_ref);
-void go_down(Stream * serial_ref);
+void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino);
+void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino);
 void stop_up_down(Stream * serial_ref);
 
+/* ARDUINO MOVEMENTS */
 
 
 
@@ -19,14 +21,16 @@ void setup_up_down_movement() {
 
   pinMode(pin_up, OUTPUT);
   pinMode(pin_down, OUTPUT);
+  pinMode(pin_reset, OUTPUT);
   pinMode(pin_up_stop, INPUT);
   pinMode(pin_down_stop, INPUT);
 
   digitalWrite(pin_up, LOW);
   digitalWrite(pin_down, LOW);
+  digitalWrite(pin_reset, HIGH);
 }
 
-void go_up(Stream * serial_ref, PubSubClient * client) {
+void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) {
   serial_ref->println("** up **");
   long lastMgsTime = millis();
 
@@ -51,10 +55,51 @@ void go_up(Stream * serial_ref, PubSubClient * client) {
   }
   digitalWrite(pin_down, LOW);
   digitalWrite(pin_up, LOW);
+  delay(300);
+
+  digitalWrite(pin_reset, LOW);
+  delay(100);
+  digitalWrite(pin_reset, HIGH);
+  delay(1000);
+  // $X
+  // -10,-10,-10
+  // G1 X-10 Y-10 Z-10 F600
+
+  //MOVE HEAD
+  // while(serial_arduino->available() > 0){
+  //   serial_arduino->read();
+  // }
+
+  serial_arduino->println("$X");
+  serial_ref->println("$X");
+  delay(100);
+  // while (serial_arduino->readString() != "[Caution: Unlocked]") {
+  //   serial_ref->println("trying to: $X");
+  //   serial_arduino->println("$X");
+  //   delay(1000);
+  // }
+
+  serial_arduino->println("$H");
+  serial_ref->println("$H");
+  delay(100);
+
+
+  serial_arduino->println("G1 X-90 Y-5 Z-5 F600");
+  serial_ref->println("G1 X-90 Y-5 Z-5 F600");
+  delay(100);
+
 }
 
-void go_down(Stream * serial_ref, PubSubClient * client) {
+void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) {
   serial_ref->println("** down **");
+
+  serial_arduino->println("G1 X0 Y0 Z0 F1000");
+  serial_ref->println("G1 X0 Y0 Z0 F1000");
+  delay(10000);
+
+  // serial_arduino->println("G1 X0 Y0 Z0 F1000");
+  // delay(100);
+
   long lastMgsTime = millis();
   long currentTime = millis();
 
@@ -80,6 +125,12 @@ void go_down(Stream * serial_ref, PubSubClient * client) {
   serial_ref->println("*** end down ***");
   digitalWrite(pin_down, LOW);
   digitalWrite(pin_up, LOW);
+  delay(300);
+
+
+  // digitalWrite(pin_reset, LOW);
+  // delay(100);
+  // digitalWrite(pin_reset, HIGH);
 }
 
 void stop_up_down(Stream * serial_ref) {
@@ -88,70 +139,3 @@ void stop_up_down(Stream * serial_ref) {
   digitalWrite(pin_down, LOW);
   digitalWrite(pin_up, LOW);
 }
-
-
-// #include <Wire.h>
-//
-// // UP AND DOWN VARIABLES
-// int pin_up_down_a = 26, pin_up_down_b = 27;
-// int pin_ud_stop_up = 34, pin_ud_stop_down = 35;
-// int vel_up_down = 1024;
-//
-//
-// /* MOVEMENT FUNCTIONS */
-// void setup_up_down_movement();
-// void go_up(Stream * serial_ref);
-// void go_down(Stream * serial_ref);
-// void stop_up_down(Stream * serial_ref);
-//
-//
-//
-//
-// // UP AND DOWN MOVEMENT FUNCTIONS
-// void setup_up_down_movement() {
-//
-//   pinMode(pin_up_down_a, OUTPUT);
-//   pinMode(pin_up_down_b, OUTPUT);
-//   pinMode(pin_ud_stop_up, INPUT);
-//   pinMode(pin_ud_stop_down, INPUT);
-//
-//   ledcAttachPin(pin_up_down_a, 0);//Atribuimos o pino 2 ao canal 0.
-//   ledcSetup(0, 1000, 10);//Atribuimos ao canal 0 a frequencia de 1000Hz com resolucao de 10bits.
-//
-//   ledcAttachPin(pin_up_down_b, 1);//Atribuimos o pino 2 ao canal 0.
-//   ledcSetup(1, 1000, 10);//Atribuimos ao canal 0 a frequencia de 1000Hz com resolucao de 10bits.
-//
-//   ledcWrite(0, 0);
-//   ledcWrite(1, 0);
-// }
-//
-// void go_up(Stream * serial_ref) {
-//   serial_ref->println("** up **");
-//
-//   ledcWrite(1, 0);
-//   ledcWrite(0, vel_up_down);
-//   while(digitalRead(pin_ud_stop_up) == LOW) {
-//     delay(10);
-//   }
-//   ledcWrite(0, 0);
-//   ledcWrite(1, 0);
-// }
-//
-// void go_down(Stream * serial_ref) {
-//   serial_ref->println("** down **");
-//
-//   ledcWrite(0, 0);
-//   ledcWrite(1, vel_up_down);
-//   while(digitalRead(pin_ud_stop_down) == LOW) {
-//     delay(10);
-//   }
-//   ledcWrite(0, 0);
-//   ledcWrite(1, 0);
-// }
-//
-// void stop_up_down(Stream * serial_ref) {
-//   serial_ref->println("** stop up and down **");
-//
-//   ledcWrite(0, 0);
-//   ledcWrite(1, 0);
-// }

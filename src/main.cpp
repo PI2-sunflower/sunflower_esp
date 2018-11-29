@@ -68,10 +68,10 @@ void callback(char* topic, byte* message, unsigned int length) {
   if (String(topic) == "movement/up_down") {
     Serial.print("Movement up_down: ");
     if(messageTemp == "up"){
-      go_up(&Serial, &client);
+      go_up(&Serial, &client, &SerialArduino);
     }
     else if(messageTemp == "down"){
-      go_down(&Serial, &client);
+      go_down(&Serial, &client, &SerialArduino);
     }
     else if(messageTemp == "stop"){
       stop_up_down(&Serial);
@@ -82,10 +82,10 @@ void callback(char* topic, byte* message, unsigned int length) {
   if (String(topic) == "movement/expand_retract") {
     Serial.print("Movement expand_retract: ");
     if(messageTemp == "expand"){
-      expand(&Serial, &client);
+      expand(&Serial, &client, &SerialArduino);
     }
     else if(messageTemp == "retract"){
-      retract(&Serial, &client);
+      retract(&Serial, &client, &SerialArduino);
     }
     else if(messageTemp == "stop"){
       stop_expand_retract(&Serial);
