@@ -21,13 +21,11 @@ void setup_up_down_movement() {
 
   pinMode(pin_up, OUTPUT);
   pinMode(pin_down, OUTPUT);
-  pinMode(pin_reset, OUTPUT);
   pinMode(pin_up_stop, INPUT);
   pinMode(pin_down_stop, INPUT);
 
   digitalWrite(pin_up, LOW);
   digitalWrite(pin_down, LOW);
-  digitalWrite(pin_reset, HIGH);
 }
 
 void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) {
@@ -35,9 +33,6 @@ void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) 
   long lastMgsTime = millis();
 
 
-  // while(digitalRead(pin_up_stop) == HIGH){
-  //   delay(50);
-  // }
   while(digitalRead(pin_up_stop) == HIGH) {
     digitalWrite(pin_down, LOW);
     digitalWrite(pin_up, HIGH);
@@ -86,17 +81,12 @@ void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino
   serial_ref->println("G1 X0 Y0 Z0 F1000");
   delay(15000);  // TODO:  15000
 
-  // serial_arduino->println("G1 X0 Y0 Z0 F1000");
-  // delay(100);
 
   long lastMgsTime = millis();
   long currentTime = millis();
 
 
-  //delay(750);
-  // while(digitalRead(pin_down_stop) == HIGH){
-  //   delay(50);
-  // }
+
   while(digitalRead(pin_down_stop) == HIGH) {
     digitalWrite(pin_up, LOW);
     digitalWrite(pin_down, HIGH);
@@ -119,9 +109,6 @@ void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino
   delay(300);
 
 
-  // digitalWrite(pin_reset, LOW);
-  // delay(100);
-  // digitalWrite(pin_reset, HIGH);
 }
 
 void stop_up_down(Stream * serial_ref) {

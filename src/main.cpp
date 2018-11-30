@@ -37,17 +37,23 @@ void setup() {
   Serial.begin(115200);
   SerialArduino.begin(115200, SERIAL_8N1, 16, 17);
 
-  setup_wifi("termofluidos", "fg@t&rm0flwydos");
+  //setup_wifi("termofluidos", "fg@t&rm0flwydos");
+  setup_wifi("AndroidK", "senha123");
+
   // uint8_t mac[6] = {0x00,0x01,0x02,0x03,0x04,0x05};
   // Ethernet.begin(mac,IPAddress(192,168,1,140));
 
-  const char* mqtt_server = "192.168.1.104";
+  const char* mqtt_server = "192.168.43.68";//"192.168.1.101";
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
+
 
   setup_up_down_movement();
   setup_expand_retract_movement();
   setup_magnetometer(&Serial, &bno);
+
+  pinMode(pin_reset, OUTPUT);
+  digitalWrite(pin_reset, HIGH);
 }
 
 
