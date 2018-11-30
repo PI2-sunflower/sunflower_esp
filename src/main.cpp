@@ -13,10 +13,11 @@
 #include "move_axis.h"
 #include "magnetometer_sensor.h"
 
+#include "pins_definitions.h"
 
 /* SENSORS VARIABLES */
 long lastMsg = 0;
-HardwareSerial SerialArduino(2);
+HardwareSerial SerialATMEGA(2);
 
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
@@ -35,15 +36,15 @@ PubSubClient client(espClient);
 
 void setup() {
   Serial.begin(115200);
-  SerialArduino.begin(115200, SERIAL_8N1, 16, 17);
+  SerialATMEGA.begin(115200, SERIAL_8N1, 16, 17);
 
-  //setup_wifi("termofluidos", "fg@t&rm0flwydos");
   setup_wifi("AndroidK", "senha123");
+  //setup_wifi("termofluidos", "fg@t&rm0flwydos");
 
   // uint8_t mac[6] = {0x00,0x01,0x02,0x03,0x04,0x05};
   // Ethernet.begin(mac,IPAddress(192,168,1,140));
 
-  const char* mqtt_server = "192.168.43.68";//"192.168.1.101";
+  const char* mqtt_server = "192.168.43.68";
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
@@ -74,24 +75,24 @@ void callback(char* topic, byte* message, unsigned int length) {
   if (String(topic) == "movement/up_down") {
     Serial.print("Movement up_down: ");
     if(messageTemp == "up"){
-      go_up(&Serial, &client, &SerialArduino);
+      go_up(&Serial, &client, &SerialATMEGA);
     }
     else if(messageTemp == "down"){
-      go_down(&Serial, &client, &SerialArduino);
+      go_down(&Serial, &client, &SerialATMEGA);
     }
     else if(messageTemp == "stop"){
       stop_up_down(&Serial);
     }
   }
 
-  // If a message is received on the topic movement/up_down
+  // If a message is received on the topic movement/expand_retract
   if (String(topic) == "movement/expand_retract") {
     Serial.print("Movement expand_retract: ");
     if(messageTemp == "expand"){
-      expand(&Serial, &client, &SerialArduino);
+      expand(&Serial, &client, &SerialATMEGA);
     }
     else if(messageTemp == "retract"){
-      retract(&Serial, &client, &SerialArduino);
+      retract(&Serial, &client, &SerialATMEGA);
     }
     else if(messageTemp == "stop"){
       stop_expand_retract(&Serial);
@@ -101,10 +102,10 @@ void callback(char* topic, byte* message, unsigned int length) {
   if (String(topic) == "movement/axis") {
     Serial.print("Moving axis: ");
     if(messageTemp == "go_home"){
-      go_home(&SerialArduino, &Serial);
+      go_home(&SerialATMEGA, &Serial);
     }
     else if (messageTemp == "unlock"){
-      unlock(&SerialArduino, &Serial);
+      unlock(&SerialATMEGA, &Serial);
     }
     else if (messageTemp == "reset_axis"){
 
@@ -113,17 +114,17 @@ void callback(char* topic, byte* message, unsigned int length) {
         digitalWrite(pin_reset, HIGH);
         delay(1000);
 
-        SerialArduino.println("$X");
+        SerialATMEGA.println("$X");
         Serial.println("$X");
         delay(100);
 
-        SerialArduino.println("$H");
+        SerialATMEGA.println("$H");
         Serial.println("$H");
         delay(100);
 
     }
     else {
-      move_axis(messageTemp, &SerialArduino, &Serial);
+      move_axis(messageTemp, &SerialATMEGA, &Serial);
     }
 
   }
@@ -168,7 +169,7 @@ void loop() {
     client.publish("status", aliveString);
 
     String magnetString = get_data(&Serial, &bno);
-    char magnetStringChar [40]; //= magnetString.toCharArray(magnetStringChar, 30);
+    char magnetStringChar [40];
     magnetString.toCharArray(magnetStringChar, 40);
     Serial.print("Magnetometer: ");
     Serial.println(magnetStringChar);

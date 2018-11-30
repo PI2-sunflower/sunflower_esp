@@ -1,20 +1,12 @@
 #include <Wire.h>
-
-// UP AND DOWN VARIABLES
-int pin_up = 26, pin_down = 27;
-int pin_up_stop = 35, pin_down_stop = 34;
-int pin_reset = 33;
+#include "pins_definitions.h"
 
 
 /* MOVEMENT FUNCTIONS */
 void setup_up_down_movement();
-void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino);
-void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino);
+void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_atmega);
+void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_atmega);
 void stop_up_down(Stream * serial_ref);
-
-/* ARDUINO MOVEMENTS */
-
-
 
 // UP AND DOWN MOVEMENT FUNCTIONS
 void setup_up_down_movement() {
@@ -28,18 +20,18 @@ void setup_up_down_movement() {
   digitalWrite(pin_down, LOW);
 }
 
-void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) {
+void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_atmega) {
   serial_ref->println("** up **");
-  long lastMgsTime = millis();
+  long lastMsgTime = millis();
+  long currentTime = millis();
 
 
   while(digitalRead(pin_up_stop) == HIGH) {
     digitalWrite(pin_down, LOW);
     digitalWrite(pin_up, HIGH);
 
-    long currentTime = millis();
-    if (currentTime - lastMgsTime > 5000) {
-      lastMgsTime = currentTime;
+    if (currentTime - lastMsgTime > 5000) {
+      lastMsgTime = currentTime;
 
       const char* busyString = "busy";
       serial_ref->print("status: ");
@@ -58,42 +50,73 @@ void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) 
   delay(1000);
 
 
-  serial_arduino->println("$X");
+  serial_atmega->println("$X");
   serial_ref->println("$X");
   delay(100);
 
 
-  serial_arduino->println("$H");
+  serial_atmega->println("$H");
   serial_ref->println("$H");
   delay(100);
 
 
-  serial_arduino->println("G1 X-90 Y-5 Z-5 F600");
+  serial_atmega->println("G1 X-90 Y-5 Z-5 F600");
   serial_ref->println("G1 X-90 Y-5 Z-5 F600");
   delay(100);
 
+  /********* DELAY 20000 WITH MQTT *********/
+  lastMsgTime = millis();
+  currentTime = millis();
+  int i;
+  for(i=0; i<6; i++) {
+    currentTime = millis();
+    if (currentTime - lastMsgTime >= 5000) {
+      lastMsgTime = currentTime;
+    }
+    const char* busyString = "busy";
+    serial_ref->print("status: ");
+    serial_ref->println(busyString);
+    client->publish("status", busyString);
+    delay(5000);
+  }
+  /***************************************/
+
 }
 
-void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino) {
+void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_atmega) {
   serial_ref->println("** down **");
 
-  serial_arduino->println("G1 X0 Y0 Z0 F1000");
+  serial_atmega->println("G1 X0 Y0 Z0 F1000");
   serial_ref->println("G1 X0 Y0 Z0 F1000");
-  delay(15000);  // TODO:  15000
-
-
-  long lastMgsTime = millis();
+  //delay(15000);
+  /********* DELAY 20000 WITH MQTT *********/
+  long lastMsgTime = millis();
   long currentTime = millis();
+  int i;
+  for(i=0; i<4; i++) {
+    currentTime = millis();
+    if (currentTime - lastMsgTime >= 5000) {
+      lastMsgTime = currentTime;
+    }
+    const char* busyString = "busy";
+    serial_ref->print("status: ");
+    serial_ref->println(busyString);
+    client->publish("status", busyString);
+    delay(5000);
+  }
+  /***************************************/
 
 
+  lastMsgTime = millis();
+  currentTime = millis();
 
-  while(digitalRead(pin_down_stop) == HIGH) {
+  while(digitalRead(pin_down_stop) == HIGH && digitalRead(pin_stop_retract) == HIGH) {
     digitalWrite(pin_up, LOW);
     digitalWrite(pin_down, HIGH);
 
     currentTime = millis();
-    if (currentTime - lastMgsTime > 5000) {
-      lastMgsTime = currentTime;
+    if (currentTime - lastMsgTime > 5000) {
+      lastMsgTime = currentTime;
 
       const char* busyString = "busy";
       serial_ref->print("status: ");
@@ -107,7 +130,6 @@ void go_down(Stream * serial_ref, PubSubClient * client, Stream * serial_arduino
   digitalWrite(pin_down, LOW);
   digitalWrite(pin_up, LOW);
   delay(300);
-
 
 }
 
