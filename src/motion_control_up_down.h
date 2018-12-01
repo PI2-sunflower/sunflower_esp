@@ -69,7 +69,7 @@ void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_atmega) {
   lastMsgTime = millis();
   currentTime = millis();
   int i;
-  for(i=0; i<6; i++) {
+  for(i=0; i<10; i++) {
     currentTime = millis();
     if (currentTime - lastMsgTime >= 5000) {
       lastMsgTime = currentTime;

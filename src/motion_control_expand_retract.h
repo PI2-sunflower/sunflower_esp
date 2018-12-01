@@ -69,7 +69,7 @@ void expand(Stream * serial_ref, PubSubClient * client, Stream * serial_atmega) 
     lastMsgTime = millis();
     currentTime = millis();
     int i;
-    for(i=0; i<4; i++) {
+    for(i=0; i<12; i++) {
       currentTime = millis();
       if (currentTime - lastMsgTime >= 5000) {
         lastMsgTime = currentTime;
