@@ -37,5 +37,3 @@
 #ifndef pin_retract
 #define pin_retract 14
 #endif
-
-//int pin_expand = 12, pin_retract = 14;

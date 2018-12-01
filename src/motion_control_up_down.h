@@ -30,6 +30,7 @@ void go_up(Stream * serial_ref, PubSubClient * client, Stream * serial_atmega) {
     digitalWrite(pin_down, LOW);
     digitalWrite(pin_up, HIGH);
 
+    currentTime = millis();
     if (currentTime - lastMsgTime > 5000) {
       lastMsgTime = currentTime;
 

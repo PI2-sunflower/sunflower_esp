@@ -27,16 +27,22 @@ void setup_expand_retract_movement() {
 }
 
 void expand(Stream * serial_ref, PubSubClient * client, Stream * serial_atmega) {
-  serial_ref->println("** expand **");
-  long lastMsgTime = millis();
-  long expandStartTime = millis();
-  long currentTime = millis();
 
   if (digitalRead(pin_up_stop) == LOW) {
+    serial_ref->println("** expand **");
+    long lastMsgTime = millis();
+    long expandStartTime = millis();
+    long currentTime = millis();
+
     digitalWrite(pin_retract, LOW);
     digitalWrite(pin_expand,  HIGH);
-
     while(true) {
+      currentTime = millis();
+
+      if (currentTime - expandStartTime >= 45000) {
+        break;
+      }
+
       if (currentTime - lastMsgTime > 5000) {
         lastMsgTime = currentTime;
         const char* busyString = "busy";
@@ -44,41 +50,40 @@ void expand(Stream * serial_ref, PubSubClient * client, Stream * serial_atmega) 
         serial_ref->println(busyString);
         client->publish("status", busyString);
       }
-      if (currentTime - expandStartTime >= 45000) {
-        break;
-      }
     }
 
     delay(50);
-  }
 
-  digitalWrite(pin_retract, LOW);
-  digitalWrite(pin_expand,  LOW);
-  delay(100);
 
-  serial_atmega->println("$X");
-  serial_ref->println("$X");
-  delay(100);
-  serial_atmega->println("$H");
-  serial_ref->println("$H");
-  //delay(20000);
-  /********* DELAY 20000 WITH MQTT *********/
-  lastMsgTime = millis();
-  currentTime = millis();
-  int i;
-  for(i=0; i<4; i++) {
+    digitalWrite(pin_retract, LOW);
+    digitalWrite(pin_expand,  LOW);
+    delay(100);
+
+    serial_atmega->println("$X");
+    serial_ref->println("$X");
+    delay(100);
+    serial_atmega->println("$H");
+    serial_ref->println("$H");
+    //delay(20000);
+    /********* DELAY 20000 WITH MQTT *********/
+    lastMsgTime = millis();
     currentTime = millis();
-    if (currentTime - lastMsgTime >= 5000) {
-      lastMsgTime = currentTime;
+    int i;
+    for(i=0; i<4; i++) {
+      currentTime = millis();
+      if (currentTime - lastMsgTime >= 5000) {
+        lastMsgTime = currentTime;
+      }
+      const char* busyString = "busy";
+      serial_ref->print("status: ");
+      serial_ref->println(busyString);
+      client->publish("status", busyString);
+      delay(5000);
     }
-    const char* busyString = "busy";
-    serial_ref->print("status: ");
-    serial_ref->println(busyString);
-    client->publish("status", busyString);
-    delay(5000);
+    /***************************************/
+  } else {
+    serial_ref->println("** cannot expand **");
   }
-  /***************************************/
-
 }
 
 void retract(Stream * serial_ref, PubSubClient * client, Stream * serial_atmega) {

@@ -44,7 +44,8 @@ void setup() {
   // uint8_t mac[6] = {0x00,0x01,0x02,0x03,0x04,0x05};
   // Ethernet.begin(mac,IPAddress(192,168,1,140));
 
-  const char* mqtt_server = "192.168.43.68";
+  //const char* mqtt_server = "192.168.43.68";
+  const char* mqtt_server = "192.168.43.175";
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
@@ -101,30 +102,35 @@ void callback(char* topic, byte* message, unsigned int length) {
 
   if (String(topic) == "movement/axis") {
     Serial.print("Moving axis: ");
-    if(messageTemp == "go_home"){
-      go_home(&SerialATMEGA, &Serial);
-    }
-    else if (messageTemp == "unlock"){
-      unlock(&SerialATMEGA, &Serial);
-    }
-    else if (messageTemp == "reset_axis"){
 
-        digitalWrite(pin_reset, LOW);
-        delay(100);
-        digitalWrite(pin_reset, HIGH);
-        delay(1000);
+    if (digitalRead(pin_down_stop) == HIGH) {
+      if(messageTemp == "go_home"){
+        go_home(&SerialATMEGA, &Serial);
+      }
+      else if (messageTemp == "unlock"){
+        unlock(&SerialATMEGA, &Serial);
+      }
+      else if (messageTemp == "reset_axis"){
 
-        SerialATMEGA.println("$X");
-        Serial.println("$X");
-        delay(100);
+          digitalWrite(pin_reset, LOW);
+          delay(100);
+          digitalWrite(pin_reset, HIGH);
+          delay(1000);
 
-        SerialATMEGA.println("$H");
-        Serial.println("$H");
-        delay(100);
+          SerialATMEGA.println("$X");
+          Serial.println("$X");
+          delay(100);
 
-    }
-    else {
-      move_axis(messageTemp, &SerialATMEGA, &Serial);
+          SerialATMEGA.println("$H");
+          Serial.println("$H");
+          delay(100);
+
+      }
+      else {
+        move_axis(messageTemp, &SerialATMEGA, &Serial);
+      }
+    } else {
+      Serial.println("Invalid Movement");
     }
 
   }
